@@ -93,7 +93,14 @@ build_path([Part|Parts], Path) when is_atom(Part) =:= true ->
   build_path(Parts, string:join([Path, http_uri:encode(atom_to_list(Part))], "/"));
 
 build_path([Part|Parts], Path) ->
-  build_path(Parts, string:join([Path, http_uri:encode(Part)], "/"));
+  case io_lib:printable_list(Part) of
+    true ->
+      % If the part of the path is a straight string, encode it
+      build_path(Parts, string:join([Path, http_uri:encode(Part)], "/"));
+    false ->
+      % If the part of the path is actually a list, don't encode it
+      build_path(Part ++ Parts, Path)
+  end;
 
 build_path([], Path) -> Path.
 
